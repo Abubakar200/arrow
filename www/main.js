@@ -1716,6 +1716,20 @@
         }
 
         function bind() {
+          const logoScreen = $("logo-screen");
+          const splash = $("splash-screen");
+          const dismissLogo = () => {
+            if (!logoScreen || logoScreen.classList.contains("dismissed")) return;
+            logoScreen.classList.add("dismissed");
+            setTimeout(() => logoScreen.remove(), 520);
+          };
+          const dismissSplash = () => {
+            if (!splash || splash.classList.contains("dismissed")) return;
+            splash.classList.add("dismissed");
+            setTimeout(() => splash.remove(), 520);
+          };
+          $("btn-splash-start").onclick = dismissSplash;
+          setTimeout(dismissLogo, 1200);
           $("btn-play").onclick = () => loadLevel(firstOpen(), false);
           $("btn-levels").onclick = () => {
             renderLevels();

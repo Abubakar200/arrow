@@ -15,6 +15,42 @@
 <body>
 
     <div id="app">
+      <div id="logo-screen" role="img" aria-label="Arrow Art">
+        <div class="logo-screen-mark" aria-hidden="true">
+          <svg viewBox="0 0 96 96" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 67c0-23 10-37 25-37h22" stroke="#fff" stroke-width="6" />
+            <path d="m53 18 19 19-19 19" stroke="#e5a51a" stroke-width="6" />
+            <circle cx="19" cy="67" r="5" fill="#4fc1e9" stroke="none" />
+          </svg>
+        </div>
+      </div>
+      <div id="splash-screen" role="dialog" aria-label="Arrow Art loading screen">
+        <div class="splash-grid" aria-hidden="true">
+          <span class="splash-cell cell-a"></span>
+          <span class="splash-cell cell-b"></span>
+          <span class="splash-cell cell-c"></span>
+          <span class="splash-cell cell-d"></span>
+          <span class="splash-cell cell-e"></span>
+          <span class="splash-cell cell-f"></span>
+          <span class="splash-cell cell-g"></span>
+          <span class="splash-cell cell-h"></span>
+          <span class="splash-cell cell-i"></span>
+        </div>
+        <div class="splash-content">
+          <div class="splash-logo" aria-hidden="true">
+            <svg viewBox="0 0 96 96" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 67c0-23 10-37 25-37h22" stroke="#fff" stroke-width="6" />
+              <path d="m53 18 19 19-19 19" stroke="#e5a51a" stroke-width="6" />
+              <circle cx="19" cy="67" r="5" fill="#4fc1e9" stroke="none" />
+            </svg>
+          </div>
+          <p class="splash-kicker">A SHAPE-MAKING PUZZLE</p>
+          <h1 class="splash-title">ARROW <span>ART</span></h1>
+          <p class="splash-tagline">Every move draws a little closer.</p>
+          <button id="btn-splash-start" class="splash-start" type="button">Tap to play <span aria-hidden="true">&#8594;</span></button>
+        </div>
+        <div class="splash-footer">30 shapes <span aria-hidden="true">&#8226;</span> endless combinations</div>
+      </div>
       <div id="top-bar" class="hidden">
         <button class="icon-btn" id="btn-back">
           <svg viewBox="0 0 24 24">
