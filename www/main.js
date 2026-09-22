@@ -1163,7 +1163,7 @@
             S.filled >= total * 0.55 &&
             $("shape-name").textContent === "Mystery shape"
           ) {
-            $("shape-name").textContent = S.shape.name + " " + S.shape.icon;
+            $("shape-name").textContent = S.shape.name;
           }
         }
         function fly(fromPoint, target, delay) {
@@ -1615,8 +1615,7 @@
           $("star-rating").innerHTML = [0, 1, 2]
             .map((i) => (i < stars ? "★" : '<span class="off">★</span>'))
             .join("");
-          $("modal-title").textContent =
-            S.shape.name + " complete " + S.shape.icon;
+          $("modal-title").textContent = S.shape.name + " complete";
           $("modal-msg").textContent =
             `${S.chains.length} arrow-snakes filled the shape. Best combo x${S.bestCombo}. +${stars * 10} coins.`;
           $("btn-modal-next").textContent = "Next";
@@ -1703,6 +1702,10 @@
             g.appendChild(d);
           });
         }
+          function openLevels() {
+            renderLevels();
+            show("levels");
+          }
         function updateMenu() {
           $("menu-coins").textContent = S.coins;
           $("menu-solved").textContent = Object.keys(S.solved).filter(
@@ -1732,15 +1735,9 @@
           $("btn-splash-start").onclick = dismissSplash;
           setTimeout(dismissLogo, 1200);
           $("btn-play").onclick = () => loadLevel(firstOpen(), false);
-          $("btn-levels").onclick = () => {
-            renderLevels();
-            show("levels");
-          };
+          $("btn-levels").onclick = openLevels;
           $("btn-daily").onclick = () => loadLevel(0, true);
-          $("btn-back-game").onclick = () => {
-            renderLevels();
-            show("levels");
-          };
+          $("btn-back-game").onclick = openLevels;
           $("btn-back-levels").onclick = () => show("menu");
           $("btn-undo").onclick = undo;
           $("btn-hint").onclick = useHint;
@@ -1755,8 +1752,7 @@
           };
           $("btn-modal-main").onclick = () => {
             $("modal").classList.add("hidden");
-            renderLevels();
-            show("levels");
+            openLevels();
           };
           $("btn-modal-next").onclick = () => {
             const m = $("btn-modal-next");
