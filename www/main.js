@@ -209,7 +209,7 @@
         const SHAPE_DEFS = [
           {
             name: "Sun",
-            icon: "☀️",
+            icon: "./assets/svg/sun.svg",
             color: "#f2a30f",
             build: () => {
               let g = shCircle(7, 7, 4);
@@ -236,19 +236,19 @@
           },
           {
             name: "Moon",
-            icon: "🌙",
+            icon: "./assets/svg/moon.svg",
             color: "#6b7fd7",
             build: () => shSub(shCircle(6, 7, 5.3), shCircle(9.2, 5.8, 4.8)),
           },
           {
             name: "Star",
-            icon: "⭐",
+            icon:"./assets/svg/star.svg",
             color: "#e5a51a",
             build: () => shPoly(shStarPts(7, 7.3, 6.3, 3, 5)),
           },
           {
             name: "Heart",
-            icon: "❤️",
+            icon: "./assets/svg/heart.svg",
             color: "#d1495b",
             build: () =>
               shUnion(
@@ -263,7 +263,7 @@
           },
           {
             name: "Diamond",
-            icon: "💎",
+            icon: "./assets/svg/diamond.svg",
             color: "#4fc1e9",
             build: () =>
               shPoly([
@@ -275,7 +275,7 @@
           },
           {
             name: "Raindrop",
-            icon: "💧",
+            icon: "./assets/svg/raindrop.svg",
             color: "#2b7fe0",
             build: () =>
               shUnion(
@@ -289,13 +289,13 @@
           },
           {
             name: "Donut",
-            icon: "🍩",
+            icon: "./assets/svg/donut.svg",
             color: "#c9708b",
             build: () => shSub(shCircle(7, 7, 6.2), shCircle(7, 7, 3)),
           },
           {
             name: "Cloud",
-            icon: "☁️",
+            icon: "./assets/svg/cloud.svg",
             color: "#8fa6c9",
             build: () =>
               shUnion(
@@ -308,7 +308,7 @@
           },
           {
             name: "Umbrella",
-            icon: "☂️",
+            icon: "./assets/svg/umbrella.svg",
             color: "#c2334d",
             build: () =>
               shUnion(
@@ -318,7 +318,7 @@
           },
           {
             name: "Balloon",
-            icon: "🎈",
+            icon: "./assets/svg/balloon.svg",
             color: "#e0607e",
             build: () =>
               shUnion(
@@ -332,7 +332,7 @@
           },
           {
             name: "Flower",
-            icon: "🌸",
+            icon: "./assets/svg/flower.svg",
             color: "#e5779a",
             build: () => {
               let g = shCircle(7, 7, 2.1);
@@ -352,13 +352,13 @@
           },
           {
             name: "Leaf",
-            icon: "🍃",
+            icon: "./assets/svg/leaf.svg",
             color: "#2a9d8f",
             build: () => shEllipse(7, 7, 2.9, 6.2, 0.7),
           },
           {
             name: "Mushroom",
-            icon: "🍄",
+            icon: "./assets/svg/mushroom.svg",
             color: "#c0392b",
             build: () =>
               shUnion(
@@ -368,7 +368,7 @@
           },
           {
             name: "Cactus",
-            icon: "🌵",
+            icon: "./assets/svg/cactus.svg",
             color: "#2f9e44",
             build: () =>
               shUnion(
@@ -381,7 +381,7 @@
           },
           {
             name: "Pineapple",
-            icon: "🍍",
+            icon: "./assets/svg/pineapple.svg",
             color: "#e0b400",
             build: () =>
               shUnion(
@@ -405,7 +405,7 @@
           },
           {
             name: "Lemon",
-            icon: "🍋",
+            icon: "./assets/svg/lemon.svg",
             color: "#e8d000",
             build: () => {
               const A = shCircle(4.6, 7, 5),
@@ -419,7 +419,7 @@
           },
           {
             name: "Grapes",
-            icon: "🍇",
+            icon: "./assets/svg/grapes.svg",
             color: "#7d4fae",
             build: () => {
               let g = shGrid();
@@ -443,7 +443,7 @@
           },
           {
             name: "Cherries",
-            icon: "🍒",
+            icon: "./assets/svg/cherries.svg",
             color: "#c2334d",
             build: () =>
               shUnion(
@@ -455,7 +455,7 @@
           },
           {
             name: "Key",
-            icon: "🔑",
+            icon: "./assets/svg/key.svg",
             color: "#b8860b",
             build: () =>
               shUnion(
@@ -467,7 +467,7 @@
           },
           {
             name: "Bell",
-            icon: "🔔",
+            icon: "./assets/svg/bell.svg",
             color: "#d4a017",
             build: () =>
               shUnion(
@@ -484,7 +484,7 @@
           },
           {
             name: "Crown",
-            icon: "👑",
+            icon: "./assets/svg/crown.svg",
             color: "#e5a51a",
             build: () =>
               shUnion(
@@ -502,7 +502,7 @@
           },
           {
             name: "Lightning",
-            icon: "⚡",
+            icon: "./assets/svg/lightning.svg",
             color: "#f0c419",
             build: () =>
               shPoly([
@@ -517,7 +517,7 @@
           },
           {
             name: "House",
-            icon: "🏠",
+            icon: "./assets/svg/house.svg",
             color: "#b5651d",
             build: () =>
               shUnion(
@@ -531,7 +531,7 @@
           },
           {
             name: "Tree",
-            icon: "🌳",
+            icon: "./assets/svg/tree.svg",
             color: "#2f7d3c",
             build: () =>
               shUnion(
@@ -550,7 +550,7 @@
           },
           {
             name: "Fish",
-            icon: "🐟",
+            icon: "./assets/svg/fish.svg",
             color: "#2b7fe0",
             build: () =>
               shUnion(
@@ -564,7 +564,7 @@
           },
           {
             name: "Cat",
-            icon: "🐱",
+            icon: "./assets/svg/cat.svg",
             color: "#8e5cc7",
             build: () =>
               shSub(
@@ -586,7 +586,7 @@
           },
           {
             name: "Paw Print",
-            icon: "🐾",
+            icon: "./assets/svg/paw-print.svg",
             color: "#a1662f",
             build: () =>
               shUnion(
@@ -599,7 +599,7 @@
           },
           {
             name: "Ice Cream",
-            icon: "🍦",
+            icon: "./assets/svg/ice-cream.svg",
             color: "#f2a6c1",
             build: () =>
               shUnion(
@@ -613,7 +613,7 @@
           },
           {
             name: "Cupcake",
-            icon: "🧁",
+            icon: "./assets/svg/cupcake.svg",
             color: "#e86a92",
             build: () =>
               shUnion(
@@ -631,7 +631,7 @@
           },
           {
             name: "Anchor",
-            icon: "⚓",
+            icon: "./assets/svg/anchor.svg",
             color: "#35506b",
             build: () =>
               shUnion(
@@ -1697,8 +1697,9 @@
               open = i === 0 || S.solved[String(i - 1)];
             const d = document.createElement("div");
             d.className = "lv" + (st ? " done" : "") + (open ? "" : " locked");
-            d.innerHTML = `<span class="ic">${st ? SHAPES[L.shape].icon : "❓"}</span>${L.id}<div class="st">${st ? "★".repeat(st) : ""}</div>`;
-            if (open) d.onclick = () => loadLevel(i, false);
+            const icon = st ? `<img src="${SHAPES[L.shape].icon}" alt="${SHAPES[L.shape].name}">` : "❓";
+            d.innerHTML = `<span class="ic">${icon}</span> ${L.id} <div class="st">${st ? "★".repeat(st) : ""}</div>`; 
+           if (open) d.onclick = () => loadLevel(i, false);
             g.appendChild(d);
           });
         }
