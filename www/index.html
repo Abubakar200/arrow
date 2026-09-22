@@ -52,7 +52,7 @@
         <div class="splash-footer">30 shapes <span aria-hidden="true">&#8226;</span> endless combinations</div>
       </div>
       <div id="top-bar" class="hidden">
-        <button class="icon-btn" id="btn-back">
+        <button class="icon-btn" id="btn-back-game" type="button" aria-label="Back">
           <svg viewBox="0 0 24 24">
             <path d="M20 11H7.8l5.6-5.6L12 4l-8 8 8 8 1.4-1.4L7.8 13H20z" />
           </svg>
@@ -102,8 +102,15 @@
 
       <section id="screen-levels" class="screen">
         <div class="levels-head">
-          <h2>Select a level</h2>
-          <p>Each level has its own shape — clear it to unlock.</p>
+          <button class="icon-btn level-back" id="btn-back-levels" type="button" aria-label="Back">
+            <svg viewBox="0 0 24 24">
+              <path d="M20 11H7.8l5.6-5.6L12 4l-8 8 8 8 1.4-1.4L7.8 13H20z" />
+            </svg>
+          </button>
+          <div class="levels-head-copy">
+            <h2>Select a level</h2>
+            <p>Each level has its own shape — clear it to unlock.</p>
+          </div>
         </div>
         <div id="levels-grid"></div>
       </section>

@@ -1737,10 +1737,11 @@
             show("levels");
           };
           $("btn-daily").onclick = () => loadLevel(0, true);
-          $("btn-back").onclick = () => {
+          $("btn-back-game").onclick = () => {
             renderLevels();
             show("levels");
           };
+          $("btn-back-levels").onclick = () => show("menu");
           $("btn-undo").onclick = undo;
           $("btn-hint").onclick = useHint;
           $("btn-restart").onclick = () => {
