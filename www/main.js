@@ -1,5 +1,29 @@
 
-      (function () {
+    import { createNavigation } from "./modules/navigation.js";
+    import { loadState, saveState } from "./modules/storage.js";
+    import { createLevels, genChains } from "./modules/levels.js";
+    import {
+      dist,
+      norm,
+      pathLength,
+      roundedPath,
+      sampleTrack,
+    } from "./modules/geometry.js";
+    import {
+      SHAPE_N,
+      shCircle,
+      shEllipse,
+      shPoly,
+      shRect,
+      shStarPts,
+      shSub,
+      shToMap,
+      shGrid,
+      shUnion,
+    } from "./modules/shape-geometry.js";
+    import { S } from "./modules/state.js";
+
+    (function () {
         "use strict";
         /* dirs: 0 up, 1 right, 2 down, 3 left */
         const DX = [0, 1, 0, -1],
@@ -24,188 +48,8 @@
           }
           return a;
         }
-        function dist(a, b) {
-          return Math.hypot(b.x - a.x, b.y - a.y);
-        }
-        function lerp(a, b, t) {
-          return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
-        }
-        function moveTowards(a, b, maxDist) {
-          const d = dist(a, b);
-          if (d <= maxDist || d === 0) return { x: b.x, y: b.y };
-          const t = maxDist / d;
-          return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
-        }
-        function pathLength(pts) {
-          let l = 0;
-          for (let i = 0; i < pts.length - 1; i++)
-            l += dist(pts[i], pts[i + 1]);
-          return l;
-        }
-        function norm(dx, dy) {
-          const l = Math.hypot(dx, dy) || 1;
-          return { x: dx / l, y: dy / l };
-        }
-        function roundedPath(pts, r) {
-          if (pts.length < 2) return "";
-          let d = `M${pts[0].x} ${pts[0].y} `;
-          for (let i = 1; i < pts.length - 1; i++) {
-            const p0 = pts[i - 1],
-              p1 = pts[i],
-              p2 = pts[i + 1];
-            const d1 = norm(p1.x - p0.x, p1.y - p0.y),
-              d2 = norm(p2.x - p1.x, p2.y - p1.y);
-            const rr = Math.min(r, dist(p0, p1) / 2, dist(p1, p2) / 2);
-            const a = { x: p1.x - d1.x * rr, y: p1.y - d1.y * rr };
-            const b = { x: p1.x + d2.x * rr, y: p1.y + d2.y * rr };
-            d += `L${a.x} ${a.y} Q${p1.x} ${p1.y} ${b.x} ${b.y} `;
-          }
-          const last = pts[pts.length - 1];
-          d += `L${last.x} ${last.y}`;
-          return d;
-        }
-        /* port of LineArrow.SampleTrack: maintains constant body length while head slides along track */
-        function sampleTrack(track, targetHeadDist, targetLength) {
-          let currentDist = 0,
-            headPos = track[0],
-            headSegIdx = 0;
-          for (let i = 0; i < track.length - 1; i++) {
-            const segLen = dist(track[i], track[i + 1]);
-            if (currentDist + segLen >= targetHeadDist) {
-              const t = (targetHeadDist - currentDist) / segLen;
-              headPos = lerp(track[i], track[i + 1], t);
-              headSegIdx = i;
-              break;
-            }
-            currentDist += segLen;
-            if (i === track.length - 2) {
-              headPos = track[i + 1];
-              headSegIdx = i;
-            }
-          }
-          const sampled = [headPos];
-          let remaining = targetLength,
-            currPoint = headPos,
-            currIdx = headSegIdx;
-          while (remaining > 0.001 && currIdx >= 0) {
-            const distToCorner = dist(currPoint, track[currIdx]);
-            if (remaining > distToCorner) {
-              if (distToCorner > 0.001) sampled.push(track[currIdx]);
-              remaining -= distToCorner;
-              currPoint = track[currIdx];
-              currIdx--;
-            } else {
-              sampled.push(moveTowards(currPoint, track[currIdx], remaining));
-              break;
-            }
-          }
-          sampled.reverse();
-          return sampled;
-        }
-
         /* ---------- shapes: built from geometric primitives so each one reads as
    the real object (star looks like a star, heart like a heart, etc.) ---------- */
-        const DESIGN = 15,
-          SHAPE_N = 19,
-          SK = DESIGN / SHAPE_N;
-        function shGrid() {
-          return Array.from({ length: SHAPE_N }, () =>
-            new Array(SHAPE_N).fill(false),
-          );
-        }
-        function shOr(g, src) {
-          for (let y = 0; y < SHAPE_N; y++)
-            for (let x = 0; x < SHAPE_N; x++) if (src[y][x]) g[y][x] = true;
-        }
-        function shAndNot(g, src) {
-          for (let y = 0; y < SHAPE_N; y++)
-            for (let x = 0; x < SHAPE_N; x++) if (src[y][x]) g[y][x] = false;
-        }
-        function shCircle(cx, cy, r) {
-          const g = shGrid();
-          for (let y = 0; y < SHAPE_N; y++)
-            for (let x = 0; x < SHAPE_N; x++) {
-              const lx = (x + 0.5) * SK,
-                ly = (y + 0.5) * SK;
-              if (Math.hypot(lx - cx, ly - cy) <= r) g[y][x] = true;
-            }
-          return g;
-        }
-        function shEllipse(cx, cy, rx, ry, rot) {
-          rot = rot || 0;
-          const g = shGrid();
-          const c = Math.cos(-rot),
-            s = Math.sin(-rot);
-          for (let y = 0; y < SHAPE_N; y++)
-            for (let x = 0; x < SHAPE_N; x++) {
-              const lx = (x + 0.5) * SK,
-                ly = (y + 0.5) * SK;
-              const px = lx - cx,
-                py = ly - cy;
-              const rx2 = px * c - py * s,
-                ry2 = px * s + py * c;
-              if ((rx2 / rx) ** 2 + (ry2 / ry) ** 2 <= 1) g[y][x] = true;
-            }
-          return g;
-        }
-        function shRect(x0, y0, x1, y1) {
-          const g = shGrid();
-          for (let y = 0; y < SHAPE_N; y++)
-            for (let x = 0; x < SHAPE_N; x++) {
-              const lx = (x + 0.5) * SK,
-                ly = (y + 0.5) * SK;
-              if (lx >= x0 && lx <= x1 && ly >= y0 && ly <= y1) g[y][x] = true;
-            }
-          return g;
-        }
-        function shPointInPoly(px, py, pts) {
-          let inside = false;
-          for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
-            const [xi, yi] = pts[i],
-              [xj, yj] = pts[j];
-            if (
-              yi > py !== yj > py &&
-              px < ((xj - xi) * (py - yi)) / (yj - yi) + xi
-            )
-              inside = !inside;
-          }
-          return inside;
-        }
-        function shPoly(pts) {
-          const g = shGrid();
-          for (let y = 0; y < SHAPE_N; y++)
-            for (let x = 0; x < SHAPE_N; x++) {
-              const lx = (x + 0.5) * SK,
-                ly = (y + 0.5) * SK;
-              if (shPointInPoly(lx, ly, pts)) g[y][x] = true;
-            }
-          return g;
-        }
-        function shStarPts(cx, cy, rO, rI, pts, rot) {
-          rot = rot === undefined ? -Math.PI / 2 : rot;
-          const out = [];
-          for (let i = 0; i < pts * 2; i++) {
-            const r = i % 2 === 0 ? rO : rI;
-            const a = rot + (i * Math.PI) / pts;
-            out.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]);
-          }
-          return out;
-        }
-        function shUnion(...gs) {
-          const g = shGrid();
-          gs.forEach((s) => shOr(g, s));
-          return g;
-        }
-        function shSub(a, b) {
-          const g = shGrid();
-          shOr(g, a);
-          shAndNot(g, b);
-          return g;
-        }
-        function shToMap(g) {
-          return g.map((row) => row.map((v) => (v ? "#" : ".")).join(""));
-        }
-
         const SHAPE_DEFS = [
           {
             name: "Sun",
@@ -661,307 +505,13 @@
           return out;
         }
 
-        const LEVELS = [];
-        for (let i = 0; i < 30; i++) {
-          let w, h, lenMin, lenMax;
-          if (i === 0) {
-            w = 12;
-            h = 12;
-            lenMin = 2;
-            lenMax = 6;
-          } // ~27 arrows, mixed short/medium/long, many turns
-          else {
-            w = 12 + Math.floor(i / 5);
-            h = 12 + Math.floor(i / 5);
-            lenMin = 2 + Math.floor(i / 15);
-            lenMax = Math.min(6 + Math.floor(i / 4), 9);
-          }
-          LEVELS.push({
-            id: i + 1,
-            w,
-            h,
-            lenMin,
-            lenMax,
-            seed: 9001 + (i + 1) * 7919,
-            shape: i,
-          });
-        }
+        const LEVELS = createLevels();
 
         /* ---------- level generator — ported from Unity LevelGenerator.cs ----------
    DFS-grown snake pieces fully tile the board; solvability is verified by
    actually simulating removal (fixed-point: repeatedly remove any piece whose
    exit path is clear until none remain, or none left removable). */
-        function genChains(W, H, minLen, maxLen, seed) {
-          const rand = rng(seed),
-            total = W * H;
-          const zone = new Set(Array.from({ length: total }, (_, i) => i));
-          const occupied = new Set();
-          const placed = [];
-          const cellIdx = (x, y) => y * W + x;
-          const idxToCell = (i) => ({ x: i % W, y: Math.floor(i / W) });
-          const neighbors = (i) => {
-            const { x, y } = idxToCell(i);
-            const res = [];
-            [
-              [1, 0],
-              [-1, 0],
-              [0, 1],
-              [0, -1],
-            ].forEach(([dx, dy]) => {
-              const nx = x + dx,
-                ny = y + dy;
-              if (nx >= 0 && nx < W && ny >= 0 && ny < H)
-                res.push(cellIdx(nx, ny));
-            });
-            return res;
-          };
-
-          function canExit(arrow, board) {
-            const head = arrow.cells[arrow.cells.length - 1];
-            const dx = DX[arrow.dir],
-              dy = DY[arrow.dir];
-            let cx = head.x + dx,
-              cy = head.y + dy;
-            while (cx >= 0 && cx < W && cy >= 0 && cy < H) {
-              if (board[cellIdx(cx, cy)] !== -1) return false;
-              cx += dx;
-              cy += dy;
-            }
-            return true;
-          }
-          function canSolve(list) {
-            if (!list.length) return true;
-            const board = new Array(total).fill(-1);
-            list.forEach((a, i) =>
-              a.cells.forEach((c) => (board[cellIdx(c.x, c.y)] = i)),
-            );
-            const removed = new Array(list.length).fill(false);
-            let removedCount = 0,
-              changed = true;
-            while (changed) {
-              changed = false;
-              for (let i = 0; i < list.length; i++) {
-                if (removed[i]) continue;
-                if (canExit(list[i], board)) {
-                  list[i].cells.forEach((c) => (board[cellIdx(c.x, c.y)] = -1));
-                  removed[i] = true;
-                  removedCount++;
-                  changed = true;
-                }
-              }
-            }
-            return removedCount === list.length;
-          }
-          function isExitBlocked(arrow, occSet) {
-            const head = arrow.cells[arrow.cells.length - 1];
-            const dx = DX[arrow.dir],
-              dy = DY[arrow.dir];
-            let cx = head.x + dx,
-              cy = head.y + dy;
-            while (cx >= 0 && cx < W && cy >= 0 && cy < H) {
-              if (occSet.has(cellIdx(cx, cy))) return true;
-              cx += dx;
-              cy += dy;
-            }
-            return false;
-          }
-          function dfsSnake(startIdx, targetLen) {
-            const path = [];
-            const visited = new Set();
-            function dfs(curIdx) {
-              path.push(curIdx);
-              visited.add(curIdx);
-              if (path.length === targetLen) return true;
-              const { x: cx, y: cy } = idxToCell(curIdx);
-              const dirs = shuffled([0, 1, 2, 3], rand);
-              for (const d of dirs) {
-                const nx = cx + DX[d],
-                  ny = cy + DY[d];
-                if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
-                const ni = cellIdx(nx, ny);
-                if (!zone.has(ni) || occupied.has(ni) || visited.has(ni))
-                  continue;
-                if (dfs(ni)) return true;
-              }
-              path.pop();
-              visited.delete(curIdx);
-              return false;
-            }
-            if (dfs(startIdx)) {
-              path.reverse();
-              return path;
-            }
-            return null;
-          }
-          function tryCreateSnake(startIdx, targetLen) {
-            const path = dfsSnake(startIdx, targetLen);
-            if (!path) return null;
-            const cells = path.map(idxToCell);
-            let dir;
-            if (cells.length >= 2) {
-              const head = cells[cells.length - 1],
-                neck = cells[cells.length - 2];
-              const dx = head.x - neck.x,
-                dy = head.y - neck.y;
-              dir = 0;
-              if (dx === 1) dir = 1;
-              else if (dx === -1) dir = 3;
-              else if (dy === 1) dir = 2;
-              else if (dy === -1) dir = 0;
-            } else {
-              // single-cell chain: no neck to infer direction from — try each direction,
-              // preferring one that is immediately open against what's placed so far
-              const cand = shuffled([0, 1, 2, 3], rand);
-              dir = cand[0];
-              for (const d of cand) {
-                let cx = cells[0].x + DX[d],
-                  cy = cells[0].y + DY[d],
-                  clear = true;
-                while (cx >= 0 && cx < W && cy >= 0 && cy < H) {
-                  if (occupied.has(cellIdx(cx, cy))) {
-                    clear = false;
-                    break;
-                  }
-                  cx += DX[d];
-                  cy += DY[d];
-                }
-                if (clear) {
-                  dir = d;
-                  break;
-                }
-              }
-            }
-            return { cells, dir };
-          }
-
-          let addedInPass = true,
-            guard = 0;
-          while (addedInPass && guard < 3000) {
-            guard++;
-            addedInPass = false;
-            let freeCells = shuffled(
-              [...zone].filter((i) => !occupied.has(i)),
-              rand,
-            );
-            if (freeCells.length < minLen) break;
-            for (const startCell of freeCells) {
-              let placedThis = false;
-              for (let targetLen = maxLen; targetLen >= minLen; targetLen--) {
-                let best = null;
-                for (let attempt = 0; attempt < 4; attempt++) {
-                  const candidate = tryCreateSnake(startCell, targetLen);
-                  if (candidate) {
-                    placed.push(candidate);
-                    if (canSolve(placed)) {
-                      best = candidate;
-                      if (isExitBlocked(candidate, occupied)) {
-                        placed.pop();
-                        break;
-                      }
-                    }
-                    placed.pop();
-                  }
-                }
-                if (best) {
-                  placed.push(best);
-                  best.cells.forEach((c) => occupied.add(cellIdx(c.x, c.y)));
-                  addedInPass = true;
-                  placedThis = true;
-                  break;
-                }
-              }
-              if (placedThis) break;
-            }
-          }
-          function attachToTail(emptyIdx) {
-            for (const ni of neighbors(emptyIdx)) {
-              for (const arrow of placed) {
-                if (!arrow.cells.length) continue;
-                if (cellIdx(arrow.cells[0].x, arrow.cells[0].y) !== ni)
-                  continue;
-                const cell = idxToCell(emptyIdx);
-                arrow.cells.unshift(cell);
-                occupied.add(emptyIdx);
-                if (canSolve(placed)) return true;
-                arrow.cells.shift();
-                occupied.delete(emptyIdx);
-              }
-            }
-            return false;
-          }
-          function attachToHead(emptyIdx) {
-            const cell = idxToCell(emptyIdx);
-            for (const ni of neighbors(emptyIdx)) {
-              for (const arrow of placed) {
-                if (!arrow.cells.length) continue;
-                const headCell = arrow.cells[arrow.cells.length - 1];
-                if (cellIdx(headCell.x, headCell.y) !== ni) continue;
-                if (
-                  headCell.x + DX[arrow.dir] !== cell.x ||
-                  headCell.y + DY[arrow.dir] !== cell.y
-                )
-                  continue;
-                arrow.cells.push(cell);
-                occupied.add(emptyIdx);
-                if (canSolve(placed)) return true;
-                arrow.cells.pop();
-                occupied.delete(emptyIdx);
-              }
-            }
-            return false;
-          }
-          let fillPass = true,
-            g2 = 0;
-          while (fillPass && g2 < 3000) {
-            g2++;
-            fillPass = false;
-            const empties = shuffled(
-              [...zone].filter((i) => !occupied.has(i)),
-              rand,
-            );
-            for (const e of empties) {
-              if (attachToTail(e) || attachToHead(e)) {
-                fillPass = true;
-                break;
-              }
-            }
-          }
-          return placed.map((a, i) => ({
-            id: i,
-            cells: a.cells,
-            dir: a.dir,
-            out: false,
-            bonus: false,
-          }));
-        }
-
-        /* ---------- state ---------- */
-        const S = {
-          idx: 0,
-          daily: false,
-          W: 0,
-          H: 0,
-          chains: [],
-          cellMap: null,
-          removed: [],
-          lives: 3,
-          hints: 5,
-          coins: 0,
-          combo: 0,
-          bestCombo: 0,
-          comboT: null,
-          solved: {},
-          sound: true,
-          streak: 0,
-          lastDay: "",
-          week: [],
-          penalized: null,
-          shape: null,
-          pixels: [],
-          filled: 0,
-          pxEls: [],
-          totalLen: 0,
-        };
+        
 
         const $ = (id) => document.getElementById(id);
         const svg = $("maze-svg"),
@@ -972,36 +522,22 @@
           levels: $("screen-levels"),
           game: $("screen-game"),
         };
+        const { show } = createNavigation(screens, $("top-bar"));
 
         function load() {
-          try {
-            const s = JSON.parse(localStorage.getItem("arrow_art_v3") || "{}");
-            S.solved = s.solved || {};
-            S.coins = s.coins || 0;
-            S.hints = s.hints === undefined ? 5 : s.hints;
-            S.sound = s.sound !== false;
-            S.streak = s.streak || 0;
-            S.lastDay = s.lastDay || "";
-            S.week = s.week || [];
-            S.bestCombo = s.bestCombo || 0;
-          } catch (e) {}
+          Object.assign(S, loadState());
         }
         function save() {
-          try {
-            localStorage.setItem(
-              "arrow_art_v3",
-              JSON.stringify({
-                solved: S.solved,
-                coins: S.coins,
-                hints: S.hints,
-                sound: S.sound,
-                streak: S.streak,
-                lastDay: S.lastDay,
-                week: S.week,
-                bestCombo: S.bestCombo,
-              }),
-            );
-          } catch (e) {}
+          saveState({
+            solved: S.solved,
+            coins: S.coins,
+            hints: S.hints,
+            sound: S.sound,
+            streak: S.streak,
+            lastDay: S.lastDay,
+            week: S.week,
+            bestCombo: S.bestCombo,
+          });
         }
 
         let ac = null;
@@ -1030,12 +566,6 @@
               navigator.vibrate(p);
             } catch (e) {}
         }
-        function show(n) {
-          Object.values(screens).forEach((s) => s.classList.remove("active"));
-          screens[n].classList.add("active");
-          $("top-bar").classList.toggle("hidden", n !== "game");
-        }
-
         /* ---------- streak ---------- */
         function today() {
           return new Date().toISOString().slice(0, 10);
