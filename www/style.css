@@ -308,6 +308,73 @@ body {
   padding: 18px 16px 24px;
   overflow-y: auto;
 }
+#screen-difficulty {
+  top: 0;
+  justify-content: center;
+  padding: 24px 20px;
+}
+.difficulty-options {
+  width: 100%;
+  max-width: 340px;
+  display: grid;
+  gap: 12px;
+  margin-top: 20px;
+}
+.difficulty-option {
+  width: 100%;
+  min-height: 82px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 18px;
+  text-align: left;
+  color: var(--navy);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.difficulty-option.easy {
+  background: var(--navy);
+  color: #fff;
+  border-color: var(--navy);
+  box-shadow: 0 10px 20px rgba(20, 32, 74, 0.18);
+}
+.difficulty-option:active:not(:disabled) {
+  transform: scale(0.98);
+}
+.difficulty-option.unavailable {
+  opacity: 0.58;
+  cursor: not-allowed;
+}
+.difficulty-number {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--gold);
+}
+.difficulty-copy {
+  flex: 1;
+  display: grid;
+  gap: 4px;
+}
+.difficulty-copy strong {
+  font-size: 1rem;
+}
+.difficulty-copy small {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.difficulty-option.easy .difficulty-copy small {
+  color: #d5dbea;
+}
+.difficulty-arrow {
+  font-size: 1.35rem;
+  color: var(--gold);
+}
+.difficulty-lock {
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  color: var(--muted);
+}
 
 .brand-mark {
   width: 78px;

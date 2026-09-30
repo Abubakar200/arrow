@@ -86,6 +86,7 @@
           app = $("app");
         const screens = {
           menu: $("screen-menu"),
+          difficulty: $("screen-difficulty"),
           levels: $("screen-levels"),
           game: $("screen-game"),
         };
@@ -799,6 +800,9 @@
             g.appendChild(d);
           });
         }
+        function openDifficulties() {
+          show("difficulty");
+        }
           function openLevels() {
             renderLevels();
             show("levels");
@@ -832,10 +836,12 @@
           $("btn-splash-start").onclick = dismissSplash;
           setTimeout(dismissLogo, 1200);
           $("btn-play").onclick = () => loadLevel(firstOpen(), false);
-          $("btn-levels").onclick = openLevels;
+          $("btn-levels").onclick = openDifficulties;
+          $("btn-back-difficulty").onclick = () => show("menu");
+          $("btn-difficulty-easy").onclick = openLevels;
           $("btn-daily").onclick = () => loadLevel(0, true);
           $("btn-back-game").onclick = openLevels;
-          $("btn-back-levels").onclick = () => show("menu");
+          $("btn-back-levels").onclick = openDifficulties;
           $("btn-undo").onclick = undo;
           $("btn-hint").onclick = useHint;
           $("btn-restart").onclick = () => {

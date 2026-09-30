@@ -100,6 +100,37 @@
         </div>
       </section>
 
+      <section id="screen-difficulty" class="screen">
+        <div class="levels-head">
+          <button class="icon-btn level-back" id="btn-back-difficulty" type="button" aria-label="Back to menu">
+            <svg viewBox="0 0 24 24">
+              <path d="M20 11H7.8l5.6-5.6L12 4l-8 8 8 8 1.4-1.4L7.8 13H20z" />
+            </svg>
+          </button>
+          <div class="levels-head-copy">
+            <h2>Choose difficulty</h2>
+            <p>Pick a challenge to get started.</p>
+          </div>
+        </div>
+        <div class="difficulty-options">
+          <button class="difficulty-option easy" id="btn-difficulty-easy" type="button">
+            <span class="difficulty-number">01</span>
+            <span class="difficulty-copy"><strong>Easy</strong><small>30 levels</small></span>
+            <span class="difficulty-arrow" aria-hidden="true">&#8594;</span>
+          </button>
+          <button class="difficulty-option unavailable" type="button" disabled>
+            <span class="difficulty-number">02</span>
+            <span class="difficulty-copy"><strong>Medium</strong><small>Coming soon</small></span>
+            <span class="difficulty-lock" aria-hidden="true">&#8226;&#8226;&#8226;</span>
+          </button>
+          <button class="difficulty-option unavailable" type="button" disabled>
+            <span class="difficulty-number">03</span>
+            <span class="difficulty-copy"><strong>Hard</strong><small>Coming soon</small></span>
+            <span class="difficulty-lock" aria-hidden="true">&#8226;&#8226;&#8226;</span>
+          </button>
+        </div>
+      </section>
+
       <section id="screen-levels" class="screen">
         <div class="levels-head">
           <button class="icon-btn level-back" id="btn-back-levels" type="button" aria-label="Back">
@@ -108,8 +139,8 @@
             </svg>
           </button>
           <div class="levels-head-copy">
-            <h2>Select a level</h2>
-            <p>Each level has its own shape — clear it to unlock.</p>
+            <h2>Easy levels</h2>
+            <p>Clear each shape to unlock the next.</p>
           </div>
         </div>
         <div id="levels-grid"></div>
