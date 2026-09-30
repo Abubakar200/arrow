@@ -13,6 +13,7 @@ export const S = {
   bestCombo: 0,
   comboT: null,
   solved: {},
+  unlocks: { medium: false, hard: false },
   sound: true,
   streak: 0,
   lastDay: "",

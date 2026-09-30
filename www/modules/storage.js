@@ -3,8 +3,13 @@ const STORAGE_KEY = "arrow_art_v3";
 export function loadState() {
   try {
     const state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    const unlocks = state.unlocks || {};
     return {
       solved: state.solved || {},
+      unlocks: {
+        medium: unlocks.medium === true,
+        hard: unlocks.hard === true,
+      },
       coins: state.coins || 0,
       hints: state.hints === undefined ? 5 : state.hints,
       sound: state.sound !== false,
@@ -16,6 +21,7 @@ export function loadState() {
   } catch (error) {
     return {
       solved: {},
+      unlocks: { medium: false, hard: false },
       coins: 0,
       hints: 5,
       sound: true,

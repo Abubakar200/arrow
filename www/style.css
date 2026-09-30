@@ -320,6 +320,10 @@ body {
   gap: 12px;
   margin-top: 20px;
 }
+.difficulty-entry {
+  display: grid;
+  gap: 2px;
+}
 .difficulty-option {
   width: 100%;
   min-height: 82px;
@@ -353,6 +357,14 @@ body {
 }
 .difficulty-option:active:not(:disabled) {
   transform: scale(0.98);
+}
+.difficulty-option.selected {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+.difficulty-option:disabled {
+  opacity: 0.58;
+  cursor: not-allowed;
 }
 .difficulty-option.unavailable {
   opacity: 0.58;
@@ -392,6 +404,24 @@ body {
   font-size: 0.8rem;
   letter-spacing: 2px;
   color: var(--muted);
+}
+.difficulty-purchase {
+  justify-self: end;
+  min-height: 38px;
+  padding: 6px 10px;
+  color: var(--navy);
+  background: transparent;
+  border: 0;
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+.difficulty-purchase:active {
+  transform: scale(0.97);
+}
+.difficulty-purchase[hidden] {
+  display: none;
 }
 
 .brand-mark {
@@ -875,6 +905,8 @@ body {
   position: absolute;
   bottom: 104px;
   left: 50%;
+  width: max-content;
+  max-width: calc(100% - 32px);
   transform: translateX(-50%) translateY(10px);
   background: var(--navy);
   color: #fff;
@@ -882,6 +914,8 @@ body {
   border-radius: 12px;
   font-size: 0.75rem;
   font-weight: 700;
+  line-height: 1.4;
+  text-align: center;
   opacity: 0;
   pointer-events: none;
   transition:

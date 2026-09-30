@@ -113,21 +113,27 @@
           </div>
         </div>
         <div class="difficulty-options">
-          <button class="difficulty-option easy" id="btn-difficulty-easy" type="button">
+          <button class="difficulty-option easy selected" id="btn-difficulty-easy" type="button">
             <span class="difficulty-number">01</span>
             <span class="difficulty-copy"><strong>Easy</strong><small>30 levels</small></span>
             <span class="difficulty-arrow" aria-hidden="true">&#8594;</span>
           </button>
-          <button class="difficulty-option medium" id="btn-difficulty-medium" type="button">
-            <span class="difficulty-number">02</span>
-            <span class="difficulty-copy"><strong>Medium</strong><small>50 unique shapes · randomized tiles</small></span>
-            <span class="difficulty-arrow" aria-hidden="true">&#8594;</span>
-          </button>
-          <button class="difficulty-option hard" id="btn-difficulty-hard" type="button">
-            <span class="difficulty-number">03</span>
-            <span class="difficulty-copy"><strong>Hard</strong><small>100 unique shapes · toughest boards</small></span>
-            <span class="difficulty-arrow" aria-hidden="true">&#8594;</span>
-          </button>
+          <div class="difficulty-entry">
+            <button class="difficulty-option medium locked" id="btn-difficulty-medium" type="button" disabled>
+              <span class="difficulty-number">02</span>
+              <span class="difficulty-copy"><strong>Medium</strong><small id="medium-unlock-copy">0/15 Easy rounds complete to unlock</small></span>
+              <span class="difficulty-arrow" aria-hidden="true">&#8594;</span>
+            </button>
+            <button class="difficulty-purchase" id="btn-buy-medium" type="button">Unlock for 5,000 coins</button>
+          </div>
+          <div class="difficulty-entry">
+            <button class="difficulty-option hard locked" id="btn-difficulty-hard" type="button" disabled>
+              <span class="difficulty-number">03</span>
+              <span class="difficulty-copy"><strong>Hard</strong><small id="hard-unlock-copy">0/30 Medium rounds complete to unlock</small></span>
+              <span class="difficulty-arrow" aria-hidden="true">&#8594;</span>
+            </button>
+            <button class="difficulty-purchase" id="btn-buy-hard" type="button">Unlock for 15,000 coins</button>
+          </div>
         </div>
       </section>
 

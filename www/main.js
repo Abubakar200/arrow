@@ -86,8 +86,8 @@
         const LEVELS = createLevels();
         const MEDIUM_LEVELS = createLevels(50).map((level, index) => ({
           ...level,
-          w: level.w + 2,
-          h: level.h + 2,
+          w: level.w + 4,
+          h: level.h + 4,
           lenMin: level.lenMin + 1,
           lenMax: Math.min(level.lenMax + 2, 11),
           seed: (level.seed + 0x45d9f3b) >>> 0,
@@ -95,10 +95,10 @@
         }));
         const HARD_LEVELS = createLevels(100).map((level, index) => ({
           ...level,
-          w: Math.min(level.w + 1, 30),
-          h: Math.min(level.h + 1, 30),
-          lenMin: level.lenMin + 2,
-          lenMax: Math.min(level.lenMax + 3, 12),
+          w: Math.min(level.w + 9, 40),
+          h: Math.min(level.h + 9, 40),
+          lenMin: Math.max(2, level.lenMin - 1),
+          lenMax: Math.min(level.lenMax + 2, 12),
           seed: (level.seed + 0x6c8e9cf5) >>> 0,
           shape: index,
         }));
@@ -137,6 +137,7 @@
         function save() {
           saveState({
             solved: S.solved,
+            unlocks: S.unlocks,
             coins: S.coins,
             hints: S.hints,
             sound: S.sound,
@@ -745,6 +746,7 @@
           save();
           renderLevels();
           updateMenu();
+          updateModeSelection();
           updateHud();
           beep(660, 0.12, 0.06);
           setTimeout(() => beep(880, 0.18, 0.06), 120);
@@ -846,6 +848,7 @@
           });
         }
         function openDifficulties() {
+          updateModeSelection();
           show("difficulty");
         }
           function openLevels() {
@@ -858,6 +861,57 @@
             (k) => /^\d+$/.test(k),
           ).length;
           $("menu-combo").textContent = S.bestCombo;
+        }
+        function completedRounds(difficulty) {
+          const prefix = difficulty === "easy" ? "" : `${difficulty}:`;
+          return Object.keys(S.solved).filter((key) =>
+            difficulty === "easy" ? /^\d+$/.test(key) : key.startsWith(prefix),
+          ).length;
+        }
+        function modeUnlocked(difficulty) {
+          if (difficulty === "easy") return true;
+          if (S.unlocks[difficulty]) return true;
+          return difficulty === "medium"
+            ? completedRounds("easy") >= 15
+            : completedRounds("medium") >= 30;
+        }
+        function updateModeSelection() {
+          const easyButton = $("btn-difficulty-easy");
+          const mediumButton = $("btn-difficulty-medium");
+          const hardButton = $("btn-difficulty-hard");
+          const mediumCompleted = completedRounds("medium");
+          const easyCompleted = completedRounds("easy");
+          const mediumUnlocked = modeUnlocked("medium");
+          const hardUnlocked = modeUnlocked("hard");
+
+          easyButton.classList.toggle("selected", activeDifficulty === "easy");
+          mediumButton.disabled = !mediumUnlocked;
+          hardButton.disabled = !hardUnlocked;
+          mediumButton.classList.toggle("locked", !mediumUnlocked);
+          hardButton.classList.toggle("locked", !hardUnlocked);
+          $("medium-unlock-copy").textContent = mediumUnlocked
+            ? `${easyCompleted}/15 Easy rounds complete · Unlocked`
+            : `${easyCompleted}/15 Easy rounds complete to unlock`;
+          $("hard-unlock-copy").textContent = hardUnlocked
+            ? `${mediumCompleted}/30 Medium rounds complete · Unlocked`
+            : `${mediumCompleted}/30 Medium rounds complete to unlock`;
+          $("btn-buy-medium").hidden = mediumUnlocked;
+          $("btn-buy-hard").hidden = hardUnlocked;
+        }
+        function purchaseMode(difficulty, cost) {
+          if (S.coins < cost) {
+            const name = difficulty[0].toUpperCase() + difficulty.slice(1);
+            toast(
+              `You have ${S.coins.toLocaleString()} coins. ${name} requires ${cost.toLocaleString()} coins.`,
+            );
+            return;
+          }
+          S.coins -= cost;
+          S.unlocks[difficulty] = true;
+          save();
+          updateMenu();
+          updateModeSelection();
+          toast(`${difficulty[0].toUpperCase() + difficulty.slice(1)} mode unlocked.`);
         }
         function firstOpen(difficulty = "easy") {
           const levels = levelsForDifficulty(difficulty);
@@ -897,6 +951,8 @@
             activeDifficulty = "hard";
             openLevels();
           };
+          $("btn-buy-medium").onclick = () => purchaseMode("medium", 5000);
+          $("btn-buy-hard").onclick = () => purchaseMode("hard", 15000);
           $("btn-daily").onclick = () => loadLevel(0, true);
           $("btn-back-game").onclick = openLevels;
           $("btn-back-levels").onclick = openDifficulties;
@@ -936,6 +992,7 @@
         bind();
         renderLevels();
         updateMenu();
+        updateModeSelection();
         renderStreak();
         updateHud();
         $("btn-sound").classList.toggle("on", S.sound);
