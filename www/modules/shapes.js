@@ -442,3 +442,155 @@ export const BASE_SHAPE_DEFS = [
       ),
   },
 ];
+
+const MEDIUM_COLORS = [
+  "#20a4a8",
+  "#e5754e",
+  "#5581c1",
+  "#b15f9d",
+  "#6f9b55",
+  "#d47c34",
+  "#5378a1",
+  "#c34f65",
+  "#8a6db2",
+  "#239b80",
+];
+const HARD_COLORS = [
+  "#d1495b",
+  "#3c78a8",
+  "#c26738",
+  "#597b48",
+  "#a94d83",
+  "#b18a25",
+  "#4666a1",
+  "#b14e42",
+  "#587c7d",
+  "#8061a8",
+];
+
+function shapeSignature(map) {
+  const rows = map.map((row) => [...row]);
+  const filledRows = rows
+    .map((row, index) => (row.includes("#") ? index : -1))
+    .filter((index) => index >= 0);
+  const filledColumns = rows[0]
+    .map((_, x) => x)
+    .filter((x) => rows.some((row) => row[x] === "#"));
+  if (!filledRows.length || !filledColumns.length) return "";
+  return filledRows
+    .map((y) => filledColumns.map((x) => rows[y][x]).join(""))
+    .join("\n");
+}
+
+function createMediumMap(index, attempt, seedOffset, target) {
+  let seed = (seedOffset + index * 7919 + attempt * 104729) >>> 0;
+  const random = () => {
+    seed = (seed + 0x6d2b79f5) >>> 0;
+    let value = seed;
+    value = Math.imul(value ^ (value >>> 15), value | 1);
+    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+  };
+  const occupied = new Set(["7,7"]);
+  while (occupied.size < target) {
+    const frontier = new Set();
+    occupied.forEach((key) => {
+      const [x, y] = key.split(",").map(Number);
+      [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]].forEach(
+        ([nextX, nextY]) => {
+          if (
+            nextX >= 0 &&
+            nextX < 15 &&
+            nextY >= 0 &&
+            nextY < 15 &&
+            !occupied.has(`${nextX},${nextY}`)
+          )
+            frontier.add(`${nextX},${nextY}`);
+        },
+      );
+    });
+    const choices = [...frontier];
+    if (!choices.length) break;
+    occupied.add(choices[Math.floor(random() * choices.length)]);
+  }
+
+  const cells = [...occupied].map((key) => key.split(",").map(Number));
+  const minX = Math.min(...cells.map(([x]) => x));
+  const maxX = Math.max(...cells.map(([x]) => x));
+  const minY = Math.min(...cells.map(([, y]) => y));
+  const maxY = Math.max(...cells.map(([, y]) => y));
+  const map = Array.from({ length: maxY - minY + 1 }, () =>
+    Array(maxX - minX + 1).fill("."),
+  );
+  cells.forEach(([x, y]) => (map[y - minY][x - minX] = "#"));
+  return map.map((row) => row.join(""));
+}
+
+function mediumShapeIcon(map, color) {
+  const height = map.length;
+  const width = map[0].length;
+  const cells = [];
+  map.forEach((row, y) =>
+    [...row].forEach((cell, x) => {
+      if (cell === "#")
+        cells.push(`<rect x="${x + 0.06}" y="${y + 0.06}" width="0.88" height="0.88" rx="0.12"/>`);
+    }),
+  );
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" fill="${color}">${cells.join("")}</svg>`;
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}
+
+function createUniqueShapes(excludedShapes, count, options) {
+  const used = new Set(excludedShapes.map(({ map }) => shapeSignature(map)));
+  return Array.from({ length: count }, (_, index) => {
+    let map;
+    for (let attempt = 0; attempt < 100; attempt++) {
+      const target =
+        options.minCells +
+        Math.floor(
+          (index * options.cellSpan) / Math.max(1, count - 1),
+        );
+      const candidate = createMediumMap(
+        index,
+        attempt,
+        options.seedOffset,
+        target,
+      );
+      const signature = shapeSignature(candidate);
+      if (!used.has(signature)) {
+        used.add(signature);
+        map = candidate;
+        break;
+      }
+    }
+    if (!map)
+      throw new Error(`Unable to create unique ${options.name} shape ${index + 1}`);
+    const color = options.colors[index % options.colors.length];
+    return {
+      name: `${options.name} Shape ${String(index + 1).padStart(2, "0")}`,
+      color,
+      map,
+      icon: mediumShapeIcon(map, color),
+    };
+  });
+}
+
+export function createMediumShapes(easyShapes, count = 50) {
+  return createUniqueShapes(easyShapes, count, {
+    name: "Medium",
+    seedOffset: 0x71f3a59b,
+    minCells: 24,
+    cellSpan: 34,
+    colors: MEDIUM_COLORS,
+  });
+}
+
+export function createHardShapes(existingShapes, count = 100) {
+  return createUniqueShapes(existingShapes, count, {
+    name: "Hard",
+    seedOffset: 0x2bc45791,
+    minCells: 44,
+    cellSpan: 50,
+    colors: HARD_COLORS,
+  });
+}

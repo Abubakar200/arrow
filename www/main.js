@@ -22,7 +22,11 @@
       shUnion,
     } from "./modules/shape-geometry.js";
     import { S } from "./modules/state.js";
-    import { BASE_SHAPE_DEFS } from "./modules/shapes.js";
+    import {
+      BASE_SHAPE_DEFS,
+      createHardShapes,
+      createMediumShapes,
+    } from "./modules/shapes.js";
 
     (function () {
         "use strict";
@@ -62,6 +66,13 @@
           color: d.color,
           map: shToMap(d.build()),
         }));
+        const MEDIUM_SHAPES = createMediumShapes(SHAPES);
+        const HARD_SHAPES = createHardShapes([...SHAPES, ...MEDIUM_SHAPES]);
+        let activeDifficulty = "easy";
+        const shapesForDifficulty = (difficulty = activeDifficulty) => {
+          if (difficulty === "hard") return HARD_SHAPES;
+          return difficulty === "medium" ? MEDIUM_SHAPES : SHAPES;
+        };
         function shapePixels(s) {
           const out = [];
           s.map.forEach((row, y) =>
@@ -73,6 +84,34 @@
         }
 
         const LEVELS = createLevels();
+        const MEDIUM_LEVELS = createLevels(50).map((level, index) => ({
+          ...level,
+          w: level.w + 2,
+          h: level.h + 2,
+          lenMin: level.lenMin + 1,
+          lenMax: Math.min(level.lenMax + 2, 11),
+          seed: (level.seed + 0x45d9f3b) >>> 0,
+          shape: index,
+        }));
+        const HARD_LEVELS = createLevels(100).map((level, index) => ({
+          ...level,
+          w: Math.min(level.w + 1, 30),
+          h: Math.min(level.h + 1, 30),
+          lenMin: level.lenMin + 2,
+          lenMax: Math.min(level.lenMax + 3, 12),
+          seed: (level.seed + 0x6c8e9cf5) >>> 0,
+          shape: index,
+        }));
+        const levelsForDifficulty = (difficulty = activeDifficulty) => {
+          if (difficulty === "hard") return HARD_LEVELS;
+          return difficulty === "medium" ? MEDIUM_LEVELS : LEVELS;
+        };
+        const progressKey = (index, difficulty = activeDifficulty) =>
+          difficulty === "hard"
+            ? `hard:${index}`
+            : difficulty === "medium"
+              ? `medium:${index}`
+              : String(index);
 
         /* ---------- level generator — ported from Unity LevelGenerator.cs ----------
    DFS-grown snake pieces fully tile the board; solvability is verified by
@@ -189,9 +228,10 @@
               shape: h % SHAPES.length,
             };
           }
-          return LEVELS[S.idx];
+          return levelsForDifficulty()[S.idx];
         }
-        function loadLevel(i, daily) {
+        function loadLevel(i, daily, difficulty = activeDifficulty) {
+          if (!daily) activeDifficulty = difficulty;
           S.idx = i;
           S.daily = !!daily;
           const L = def();
@@ -207,12 +247,12 @@
           S.lives = 3;
           S.combo = 0;
           S.penalized = new Set();
-          S.shape = SHAPES[L.shape];
+          S.shape = (daily ? SHAPES : shapesForDifficulty())[L.shape];
           S.pixels = shapePixels(S.shape);
           S.filled = 0;
           $("level-title").textContent = daily
             ? "Daily shape"
-            : "Level " + L.id;
+            : `${activeDifficulty === "easy" ? "Level" : activeDifficulty[0].toUpperCase() + activeDifficulty.slice(1)} ${L.id}`;
           buildShape();
           build();
           updateHud();
@@ -230,7 +270,7 @@
           g.style.setProperty("--shape", S.shape.color);
           g.innerHTML = "";
           S.pxEls = [];
-          const solvedBefore = !S.daily && S.solved[String(S.idx)];
+          const solvedBefore = !S.daily && S.solved[progressKey(S.idx)];
           S.shape.map.forEach((row, y) =>
             [...row].forEach((c, x) => {
               const d = document.createElement("div");
@@ -698,7 +738,7 @@
         }
         function win() {
           const stars = S.lives === 3 ? 3 : S.lives === 2 ? 2 : 1;
-          const key = S.daily ? "daily" : String(S.idx);
+          const key = S.daily ? "daily" : progressKey(S.idx);
           if (!S.daily && (S.solved[key] || 0) < stars) S.solved[key] = stars;
           S.coins += stars * 10;
           markPlayed();
@@ -719,7 +759,9 @@
           $("btn-modal-next").textContent = "Next";
           $("btn-modal-next").dataset.retry = "";
           $("btn-modal-next").style.display =
-            !S.daily && S.idx < LEVELS.length - 1 ? "block" : "none";
+            !S.daily && S.idx < levelsForDifficulty().length - 1
+              ? "block"
+              : "none";
           $("modal").classList.remove("hidden");
         }
         function fail() {
@@ -788,15 +830,18 @@
 
         function renderLevels() {
           const g = $("levels-grid");
+          const levels = levelsForDifficulty();
+          $("levels-title").textContent = `${activeDifficulty[0].toUpperCase() + activeDifficulty.slice(1)} levels`;
           g.innerHTML = "";
-          LEVELS.forEach((L, i) => {
-            const st = S.solved[String(i)] || 0,
-              open = i === 0 || S.solved[String(i - 1)];
+          levels.forEach((L, i) => {
+            const st = S.solved[progressKey(i)] || 0,
+              open = i === 0 || S.solved[progressKey(i - 1)];
             const d = document.createElement("div");
             d.className = "lv" + (st ? " done" : "") + (open ? "" : " locked");
-            const icon = st ? `<img src="${SHAPES[L.shape].icon}" alt="${SHAPES[L.shape].name}">` : "❓";
+            const shape = shapesForDifficulty()[L.shape];
+            const icon = st ? `<img src="${shape.icon}" alt="${shape.name}">` : "❓";
             d.innerHTML = `<span class="ic">${icon}</span> ${L.id} <div class="st">${st ? "★".repeat(st) : ""}</div>`; 
-           if (open) d.onclick = () => loadLevel(i, false);
+            if (open) d.onclick = () => loadLevel(i, false);
             g.appendChild(d);
           });
         }
@@ -810,13 +855,14 @@
         function updateMenu() {
           $("menu-coins").textContent = S.coins;
           $("menu-solved").textContent = Object.keys(S.solved).filter(
-            (k) => k !== "daily",
+            (k) => /^\d+$/.test(k),
           ).length;
           $("menu-combo").textContent = S.bestCombo;
         }
-        function firstOpen() {
-          for (let i = 0; i < LEVELS.length; i++)
-            if (!S.solved[String(i)]) return i;
+        function firstOpen(difficulty = "easy") {
+          const levels = levelsForDifficulty(difficulty);
+          for (let i = 0; i < levels.length; i++)
+            if (!S.solved[progressKey(i, difficulty)]) return i;
           return 0;
         }
 
@@ -835,10 +881,22 @@
           };
           $("btn-splash-start").onclick = dismissSplash;
           setTimeout(dismissLogo, 1200);
-          $("btn-play").onclick = () => loadLevel(firstOpen(), false);
+          $("btn-play").onclick = () =>
+            loadLevel(firstOpen("easy"), false, "easy");
           $("btn-levels").onclick = openDifficulties;
           $("btn-back-difficulty").onclick = () => show("menu");
-          $("btn-difficulty-easy").onclick = openLevels;
+          $("btn-difficulty-easy").onclick = () => {
+            activeDifficulty = "easy";
+            openLevels();
+          };
+          $("btn-difficulty-medium").onclick = () => {
+            activeDifficulty = "medium";
+            openLevels();
+          };
+          $("btn-difficulty-hard").onclick = () => {
+            activeDifficulty = "hard";
+            openLevels();
+          };
           $("btn-daily").onclick = () => loadLevel(0, true);
           $("btn-back-game").onclick = openLevels;
           $("btn-back-levels").onclick = openDifficulties;
@@ -863,7 +921,11 @@
             if (m.dataset.retry) {
               m.dataset.retry = "";
               loadLevel(S.idx, S.daily);
-            } else loadLevel(Math.min(S.idx + 1, LEVELS.length - 1), false);
+            } else
+              loadLevel(
+                Math.min(S.idx + 1, levelsForDifficulty().length - 1),
+                false,
+              );
           };
           window.addEventListener("resize", () => {
             if (screens.game.classList.contains("active")) build();

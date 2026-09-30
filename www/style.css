@@ -339,6 +339,18 @@ body {
   border-color: var(--navy);
   box-shadow: 0 10px 20px rgba(20, 32, 74, 0.18);
 }
+.difficulty-option.medium {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+  box-shadow: 0 10px 20px rgba(43, 127, 224, 0.18);
+}
+.difficulty-option.hard {
+  background: var(--bad);
+  color: #fff;
+  border-color: var(--bad);
+  box-shadow: 0 10px 20px rgba(209, 73, 91, 0.18);
+}
 .difficulty-option:active:not(:disabled) {
   transform: scale(0.98);
 }
@@ -365,6 +377,12 @@ body {
 }
 .difficulty-option.easy .difficulty-copy small {
   color: #d5dbea;
+}
+.difficulty-option.medium .difficulty-copy small {
+  color: #e0efff;
+}
+.difficulty-option.hard .difficulty-copy small {
+  color: #ffe4e7;
 }
 .difficulty-arrow {
   font-size: 1.35rem;
